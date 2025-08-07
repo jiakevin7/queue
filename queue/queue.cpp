@@ -2,7 +2,7 @@
 #include <iostream>
 #include <memory>
 
-namespace kevin_queue {
+namespace kevinQueue {
 
 template<typename ValueT>
 class queue {
@@ -67,7 +67,6 @@ public:
 
 private:
 	void resize() {
-        boost::lock_guard<boost::mutex> lg(m_);
 		if (capacity_ == 0) capacity_ = 1;
 		else capacity_ *= 2;
 		std::unique_ptr<ValueT[]> tmp = std::make_unique<ValueT[]>(capacity_);

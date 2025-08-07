@@ -1,22 +1,51 @@
-#include <boost/thread>
+#include <boost/thread.hpp>
 #include "queue.cpp"
 #include <iostream>
+#include <string>
 
-kevin_queue::queue<int> g_queue;
+using namespace boost;
+mutex coutM;
 
+kevinQueue::queue<int> g_queue;
+int numThreads = 10;
 
-void testing() {
-    g_queue
+void printHelper(std::variant<int, std::string_view> message) {
+    lock_guard<mutex> lg(coutM);
+    std::visit([](auto &arg) {
+        if constexpr (std::is_same_v<decltype(arg), int>) 
+            std::cout << arg << std::endl;
+        else 
+            std::cout << arg << std::endl;
+    }, message);
 }
 
-int main() {
-	kevin_queue::queue<int> q;
-	const kevin_queue::queue<int>& q2 = q;
-	std::cout << q2.front();
-	for (int i = 0; i < 10; ++i) q.push(i);
-	std::cout << q.capacity() << " " << q.size() << std::endl;
-	for (int i = 0; i < 10; ++i) {
-		std::cout << q.front();
-		q.pop();
-	} 
+void doWork() {
+    g_queue.push(1);
+
+    printHelper(g_queue.front());
+
+    g_queue.push(2);
+
+    printHelper(g_queue.front());
+    
+    g_queue.pop();
+
+    g_queue.push(3);
+    
+    printHelper(g_queue.front());
+}
+
+int main(int argc, char** argv) {
+	// std::cout << g_queue.front();
+
+    if (argc > 1)
+        numThreads = std::atoi(argv[1]);
+
+    thread_group tg;
+    for (int i = 0; i < numThreads; ++i) {
+        tg.create_thread(doWork);
+    }
+
+    tg.join_all();
+    
 }
